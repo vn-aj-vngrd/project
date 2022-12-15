@@ -1,3 +1,5 @@
+import Meta from "./Meta";
+
 type Props = {
   children: React.ReactNode;
 };
@@ -5,10 +7,9 @@ type Props = {
 const Layout = ({ children }: Props) => {
   return (
     <>
-      <div>
-        <div className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center  px-5 md:px-0">
+      <Meta />
+      <div className="w-full bg-indigo-50 flex items-center justify-center min-h-screen">
           <main className="md:px-8">{children}</main>
-        </div>
       </div>
     </>
   );

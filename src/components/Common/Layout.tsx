@@ -1,3 +1,5 @@
+import Footer from "./Footer";
+import Header from "./Header";
 import Meta from "./Meta";
 
 type Props = {
@@ -8,8 +10,10 @@ const Layout = ({ children }: Props) => {
   return (
     <>
       <Meta />
-      <div className="w-full bg-indigo-50 flex items-center justify-center min-h-screen">
-          <main className="md:px-8">{children}</main>
+      <div className="mx-auto flex flex-col min-h-screen w-full max-w-7xl items-center justify-between">
+        <Header />
+        <main>{children}</main>
+        <Footer />
       </div>
     </>
   );

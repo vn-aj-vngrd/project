@@ -9,6 +9,8 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { useContext } from "react";
+import AppContext from "../../context/AppContext";
 
 ChartJS.register(
   CategoryScale,
@@ -48,15 +50,12 @@ export const data = {
 };
 
 const Chart = () => {
+  const context = useContext(AppContext);
+  console.log(context);
+
   return (
-    <div>
-      <Line
-        data={data}
-        options={options}
-        width={100}
-        height={50}
-        className="h-[1000px] w-[1000px] rounded-lg bg-white p-2 shadow"
-      />
+    <div className="w-full rounded-lg bg-white p-1.5 shadow md:w-[768px]">
+      <Line data={data} options={options} />
     </div>
   );
 };

@@ -54,7 +54,7 @@ const Chart = () => {
   console.log(context);
 
   return (
-    <div className="w-full rounded-lg bg-white p-1.5 shadow md:w-[768px]">
+    <div className="w-[400px] h-[210px] rounded-lg bg-white p-1.5 shadow lg:w-[750px] lg:h-[390px]">
       <Line data={data} options={options} />
     </div>
   );

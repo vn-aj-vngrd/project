@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <div>Oliver Juntilla</div>
+    <div className="mb-3 text-sm">Oliver Juntilla</div>
   )
 }
 

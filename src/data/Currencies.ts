@@ -1,6 +1,6 @@
 export const currencies = [
-  "PHP",
   "USD",
+  "PHP",
   "EUR",
   "JPY",
   "GBP",

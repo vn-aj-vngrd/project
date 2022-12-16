@@ -35,7 +35,7 @@ export const options = {
 
 const Chart = () => {
   const context = useContext(AppContext);
-  console.log(context.dataPoints);
+  // console.log(context.dataPoints);
 
   const labels = context.dataPoints.map((dataPoint) => dataPoint.date) || [];
 

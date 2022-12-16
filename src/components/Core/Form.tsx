@@ -58,12 +58,12 @@ const Form = () => {
     )
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
+        // console.log(result);
 
         const data_points = Object.entries(
           result.rates as { [date: string]: { [currency: string]: number } }
         ).map(([date, _rate]) => {
-          const timestamp = new Date(date).valueOf() as number;
+          const timestamp = new Date(date).getTime() as number;
           const currency = Object.keys(_rate)[0] as string;
           const rate = _rate[currency as string] as number;
           return { date, timestamp, rate };
@@ -86,8 +86,6 @@ const Form = () => {
 
   const dividedDifference = (data_points: DataPoints[], date: string) => {
     if (data_points && data_points.length > 0) {
-      console.log(data_points, date);
-
       // 𝐴 = 𝑓(𝑥0)
       const A = data_points[0]!.rate;
 
@@ -126,8 +124,8 @@ const Form = () => {
           F * (data_points[5]!.timestamp - data_points[4]!.timestamp)) /
         (data_points[6]!.timestamp - data_points[4]!.timestamp);
 
-      const x = new Date(date).valueOf() as number;
-      console.log(x)
+      const x = new Date(date).getTime() as number;
+      console.log(x);
 
       // 𝑦 = 𝑓(𝑥) = 𝐴 +
       // 𝐵(𝑥 − 𝑥0) +
@@ -136,6 +134,8 @@ const Form = () => {
       // 𝐸(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0) +
       // F(𝑥 − 𝑥4)(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0) +
       // G(𝑥 − 𝑥5)(𝑥 − 𝑥4)(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0)
+
+      console.log(A, B, C, D, E, D, G);
 
       const y =
         A +
@@ -165,14 +165,13 @@ const Form = () => {
           (x - data_points[0]!.timestamp);
 
       setResult(y);
-      console.log(y);
+      console.log(y)
 
       const data = {
         date,
         timestamp: x,
         rate: y,
       };
-      console.log(data);
 
       return data;
     }
@@ -211,11 +210,9 @@ const Form = () => {
                   defaultValue={currencyTo}
                   onChange={(e) => setCurrencyTo(e.target.value)}
                 >
-                  {currencies
-                    .filter((cur) => cur !== currencyFrom)
-                    .map((currency, index) => (
-                      <option key={index}>{currency}</option>
-                    ))}
+                  {currencies.map((currency, index) => (
+                    <option key={index}>{currency}</option>
+                  ))}
                 </select>
               </div>
             </div>

@@ -126,7 +126,8 @@ const Form = () => {
           F * (data_points[5]!.timestamp - data_points[4]!.timestamp)) /
         (data_points[6]!.timestamp - data_points[4]!.timestamp);
 
-      const x = moment(date).valueOf();
+      const x = new Date(date).valueOf() as number;
+      console.log(x)
 
       // 𝑦 = 𝑓(𝑥) = 𝐴 +
       // 𝐵(𝑥 − 𝑥0) +

@@ -6,11 +6,10 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { useContext } from "react";
-import AppContext from "../../context/AppContext";
+import { AppContext } from "../../context/AppContext";
 
 ChartJS.register(
   CategoryScale,
@@ -18,8 +17,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Title,
-  Tooltip,
-  Legend
+  Tooltip
 );
 
 export const options = {
@@ -35,26 +33,25 @@ export const options = {
   },
 };
 
-const labels = ["January", "February", "March", "April", "May", "June", "July"];
-
-export const data = {
-  labels,
-  datasets: [
-    {
-      label: "Dataset 1",
-      data: [1, 2, 3, 4, 5],
-      borderColor: "#6366f1",
-      backgroundColor: "#6366f1",
-    },
-  ],
-};
-
 const Chart = () => {
   const context = useContext(AppContext);
-  console.log(context);
+  console.log(context.dataPoints);
+
+  const labels = context.dataPoints.map((dataPoint) => dataPoint.date) || [];
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        data: context.dataPoints.map((dataPoint) => dataPoint.rate) || [],
+        borderColor: "#6366f1",
+        backgroundColor: "#6366f1",
+      },
+    ],
+  };
 
   return (
-    <div className="w-[400px] h-[210px] rounded-lg bg-white p-1.5 shadow lg:w-[750px] lg:h-[390px]">
+    <div className="h-[210px] w-[400px] rounded-lg bg-white p-1.5 shadow lg:h-[390px] lg:w-[750px]">
       <Line data={data} options={options} />
     </div>
   );

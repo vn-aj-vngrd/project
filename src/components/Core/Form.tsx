@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useState } from "react";
+import { useContext, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import currencies from "../../data/Currencies";
@@ -7,6 +7,7 @@ import { ArrowRightCircleIcon } from "@heroicons/react/24/solid";
 import moment from "moment";
 import { env } from "../../env/client.mjs";
 import type { DataPoints } from "../../types";
+import { AppContext } from "../../context/AppContext";
 
 type Inputs = {
   amount: number;
@@ -14,16 +15,19 @@ type Inputs = {
 };
 
 const Form = () => {
+  const context = useContext(AppContext);
+
   const [currencyFrom, setCurrencyFrom] = useState(currencies[0]);
   const [currencyTo, setCurrencyTo] = useState(currencies[1]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [result, setResult] = useState(0);
 
   const {
     register,
     handleSubmit,
     // watch,
-    // reset,
+    reset,
     formState: { errors },
   } = useForm<Inputs>();
 
@@ -58,14 +62,18 @@ const Form = () => {
 
         const data_points = Object.entries(
           result.rates as { [date: string]: { [currency: string]: number } }
-        ).map(([date, rate]) => {
+        ).map(([date, _rate]) => {
           const timestamp = new Date(date).valueOf() as number;
-          const currency = Object.keys(rate)[0] as string;
-          const value = rate[currency as string] as number;
-          return { date, timestamp, value };
+          const currency = Object.keys(_rate)[0] as string;
+          const rate = _rate[currency as string] as number;
+          return { date, timestamp, rate };
         });
 
-        dividedDifference(data_points, data.date);
+        const res = dividedDifference(data_points, data.date);
+        data_points.push(res as DataPoints);
+
+        console.log(data_points);
+        context.setDataPoints(data_points);
 
         setIsLoading(false);
       })
@@ -80,82 +88,92 @@ const Form = () => {
     if (data_points && data_points.length > 0) {
       console.log(data_points, date);
 
-      const A = data_points[0]!.value;
+      // 𝐴 = 𝑓(𝑥0)
+      const A = data_points[0]!.rate;
 
+      // 𝐵 = 𝑓(𝑥1) − 𝑓(𝑥0) /  𝑥1 − 𝑥0
       const B =
-        (data_points[1]!.value - A) /
+        (data_points[1]!.rate - data_points[0]!.rate) /
         (data_points[1]!.timestamp - data_points[0]!.timestamp);
 
+      // 𝐶 = 𝐵(𝑥2) − 𝐵(𝑥1) / 𝑥2 − 𝑥1
       const C =
-        ((data_points[2]!.value - data_points[1]!.value) /
-          (data_points[2]!.timestamp - data_points[1]!.timestamp) -
-          B) /
+        (B * (data_points[2]!.timestamp - data_points[1]!.timestamp) -
+          B * (data_points[1]!.timestamp - data_points[0]!.timestamp)) /
         (data_points[2]!.timestamp - data_points[0]!.timestamp);
 
+      // 𝐷 = 𝐶(𝑥3) − 𝐶(𝑥2) /  𝑥3 − 𝑥2
       const D =
-        ((data_points[3]!.value - data_points[2]!.value) /
-          (data_points[3]!.timestamp - data_points[2]!.timestamp) -
-          C -
-          B) /
-        (data_points[3]!.timestamp - data_points[0]!.timestamp);
+        (C * (data_points[3]!.timestamp - data_points[2]!.timestamp) -
+          C * (data_points[2]!.timestamp - data_points[1]!.timestamp)) /
+        (data_points[3]!.timestamp - data_points[1]!.timestamp);
 
+      // 𝐸 = 𝐷(𝑥4) − 𝐷(𝑥3) / 𝑥4 − 𝑥3
       const E =
-        ((data_points[4]!.value - data_points[3]!.value) /
-          (data_points[4]!.timestamp - data_points[3]!.timestamp) -
-          D -
-          C -
-          B) /
-        (data_points[4]!.timestamp - data_points[0]!.timestamp);
+        (D * (data_points[4]!.timestamp - data_points[3]!.timestamp) -
+          D * (data_points[3]!.timestamp - data_points[2]!.timestamp)) /
+        (data_points[4]!.timestamp - data_points[2]!.timestamp);
 
+      // 𝐹 = 𝐸(𝑥5) − 𝐸(𝑥4) /  𝑥5 − 𝑥4
       const F =
-        ((data_points[5]!.value - data_points[4]!.value) /
-          (data_points[5]!.timestamp - data_points[4]!.timestamp) -
-          E -
-          D -
-          C -
-          B) /
-        (data_points[5]!.timestamp - data_points[0]!.timestamp);
+        (E * (data_points[5]!.timestamp - data_points[4]!.timestamp) -
+          E * (data_points[4]!.timestamp - data_points[3]!.timestamp)) /
+        (data_points[5]!.timestamp - data_points[3]!.timestamp);
 
+      // 𝐺 = 𝐹(𝑥6) − 𝐹(𝑥5) / 𝑥6 − 𝑥5
       const G =
-        ((data_points[6]!.value - data_points[5]!.value) /
-          (data_points[6]!.timestamp - data_points[5]!.timestamp) -
-          F -
-          E -
-          D -
-          C -
-          B) /
-        (data_points[6]!.timestamp - data_points[0]!.timestamp);
+        (F * (data_points[6]!.timestamp - data_points[5]!.timestamp) -
+          F * (data_points[5]!.timestamp - data_points[4]!.timestamp)) /
+        (data_points[6]!.timestamp - data_points[4]!.timestamp);
 
-      const P = moment(date).valueOf();
+      const x = moment(date).valueOf();
 
-      const result =
+      // 𝑦 = 𝑓(𝑥) = 𝐴 +
+      // 𝐵(𝑥 − 𝑥0) +
+      // 𝐶(𝑥 − 𝑥1)(𝑥 − 𝑥0) +
+      // 𝐷(𝑥 − 𝑥2)(𝑥 − 𝑥1) (𝑥 − 𝑥0) +
+      // 𝐸(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0) +
+      // F(𝑥 − 𝑥4)(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0) +
+      // G(𝑥 − 𝑥5)(𝑥 − 𝑥4)(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0)
+
+      const y =
         A +
-        B * (P - data_points[0]!.timestamp) +
-        C * (P - data_points[0]!.timestamp) * (P - data_points[1]!.timestamp) +
+        B * (x - data_points[0]!.timestamp) +
+        C * (x - data_points[1]!.timestamp) * (x - data_points[0]!.timestamp) +
         D *
-          (P - data_points[0]!.timestamp) *
-          (P - data_points[1]!.timestamp) *
-          (P - data_points[2]!.timestamp) +
+          (x - data_points[2]!.timestamp) *
+          (x - data_points[1]!.timestamp) *
+          (x - data_points[0]!.timestamp) +
         E *
-          (P - data_points[0]!.timestamp) *
-          (P - data_points[1]!.timestamp) *
-          (P - data_points[2]!.timestamp) *
-          (P - data_points[3]!.timestamp) +
+          (x - data_points[3]!.timestamp) *
+          (x - data_points[2]!.timestamp) *
+          (x - data_points[1]!.timestamp) *
+          (x - data_points[0]!.timestamp) +
         F *
-          (P - data_points[0]!.timestamp) *
-          (P - data_points[1]!.timestamp) *
-          (P - data_points[2]!.timestamp) *
-          (P - data_points[3]!.timestamp) *
-          (P - data_points[4]!.timestamp) +
+          (x - data_points[4]!.timestamp) *
+          (x - data_points[3]!.timestamp) *
+          (x - data_points[2]!.timestamp) *
+          (x - data_points[1]!.timestamp) *
+          (x - data_points[0]!.timestamp) +
         G *
-          (P - data_points[0]!.timestamp) *
-          (P - data_points[1]!.timestamp) *
-          (P - data_points[2]!.timestamp) *
-          (P - data_points[3]!.timestamp) *
-          (P - data_points[4]!.timestamp) *
-          (P - data_points[5]!.timestamp);
+          (x - data_points[5]!.timestamp) *
+          (x - data_points[4]!.timestamp) *
+          (x - data_points[3]!.timestamp) *
+          (x - data_points[2]!.timestamp) *
+          (x - data_points[1]!.timestamp) *
+          (x - data_points[0]!.timestamp);
 
-      console.log(result);
+      setResult(y);
+      console.log(y);
+
+      const data = {
+        date,
+        timestamp: x,
+        rate: y,
+      };
+      console.log(data);
+
+      return data;
     }
   };
 
@@ -219,8 +237,8 @@ const Form = () => {
                   },
                 })}
                 type="date"
-                min={moment().toISOString().substring(0, 10)}
-                className="date"
+                min={moment().add("1", "days").toISOString().substring(0, 10)}
+                className="input"
               />
             </div>
             {errors.date && (
@@ -230,10 +248,37 @@ const Form = () => {
             )}
           </div>
 
-          {/* Button */}
+          {/* Forecast */}
           <div>
-            <button type="submit" className="button">
-              <div>
+            <label
+              htmlFor="date"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Forecast
+            </label>
+            <div className="mt-2">
+              <input
+                defaultValue={result}
+                type="input"
+                className="input"
+              />
+            </div>
+          </div>
+
+          {/* Start Button */}
+          {context.dataPoints.length > 0 ? (
+            <button
+              className="button"
+              onClick={() => {
+                reset();
+                context.setDataPoints([]);
+              }}
+            >
+              Reset
+            </button>
+          ) : (
+            <div>
+              <button type="submit" className="button">
                 {isLoading && (
                   <div role="status">
                     <svg
@@ -254,10 +299,11 @@ const Form = () => {
                     </svg>
                   </div>
                 )}
-              </div>
-              <p> {isLoading ? <>Loading</> : <>Start</>}</p>
-            </button>
-          </div>
+
+                <p> {isLoading ? <>Loading</> : <>Start</>}</p>
+              </button>
+            </div>
+          )}
 
           {error && <div className="text-sm text-red-500">Error: {error}</div>}
         </form>

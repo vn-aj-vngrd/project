@@ -9,29 +9,6 @@ import { env } from "../../env/client.mjs";
 import type { DataPoints } from "../../types";
 import { AppContext } from "../../context/AppContext";
 
-const sampleData = [
-  {
-    date: "15s",
-    timestamp: 15,
-    rate: 7.11,
-  },
-  {
-    date: "20s",
-    timestamp: 20,
-    rate: 9.01,
-  },
-  {
-    date: "25s",
-    timestamp: 25,
-    rate: 10.63,
-  },
-  {
-    date: "28s",
-    timestamp: 28,
-    rate: 11.47,
-  },
-];
-
 type Inputs = {
   amount: number;
   date: string;
@@ -83,13 +60,14 @@ const Form = () => {
       .then((result) => {
         console.log(result);
 
+        let i = 0;
         const data_points = Object.entries(
           result.rates as { [date: string]: { [currency: string]: number } }
         ).map(([date, _rate]) => {
-          const timestamp = new Date(date).getTime() as number;
+          const day = (i += 1);
           const currency = Object.keys(_rate)[0] as string;
           const rate = _rate[currency as string] as number;
-          return { date, timestamp, rate };
+          return { date, day, rate };
         });
 
         const res = dividedDifference(data_points, data.date);
@@ -115,37 +93,34 @@ const Form = () => {
       // 𝐵 = 𝑓(𝑥1) − 𝑓(𝑥0) / 𝑥1 − 𝑥0
       const B =
         (data_points[1]!.rate - data_points[0]!.rate) /
-        (data_points[1]!.timestamp - data_points[0]!.timestamp);
+        (data_points[1]!.day - data_points[0]!.day);
 
-      // 𝐶 = [f(x2) - f(x1) / (x2 - x1)] - [f(x1) - f(x0) / (x1 - x0)] / 𝑥2 − 𝑥0
+      // C = [f(x2) - f(x1) / (x2 - x1)] - B / 𝑥2 − 𝑥0
       const C =
         ((data_points[2]!.rate - data_points[1]!.rate) /
-          (data_points[2]!.timestamp - data_points[1]!.timestamp) -
-          (data_points[1]!.rate - data_points[0]!.rate) /
-            (data_points[1]!.timestamp - data_points[0]!.timestamp)) /
-        (data_points[2]!.timestamp - data_points[0]!.timestamp);
+          (data_points[2]!.day - data_points[1]!.day) -
+          B) /
+        (data_points[2]!.day - data_points[0]!.day);
 
-      // 𝐷 = [f(x3) - f(x2) / (x3 - x2)] - [f(x2) - f(x1) / (x2 - x1)] - [f(x1) - f(x0) / (x1 - x0)] / 𝑥3 − 𝑥0
+      // D = [f(x3) - f(x2) / (x3 - x2)] - C / 𝑥3 − 𝑥0
       const D =
         ((data_points[3]!.rate - data_points[2]!.rate) /
-          (data_points[3]!.timestamp - data_points[2]!.timestamp) -
-          (data_points[2]!.rate - data_points[1]!.rate) /
-            (data_points[2]!.timestamp - data_points[1]!.timestamp) -
-          (data_points[1]!.rate - data_points[0]!.rate) /
-            (data_points[1]!.timestamp - data_points[0]!.timestamp)) /
-        (data_points[3]!.timestamp - data_points[0]!.timestamp);
+          (data_points[3]!.day - data_points[2]!.day) -
+          C) /
+        (data_points[3]!.day - data_points[0]!.day);
 
-      const x = new Date(date).getTime() as number;
+      const day_diff = moment(date).diff(data_points[3]!.date, "days");
+      const x = 4 + 1 * day_diff;
 
       // 𝑦 = = 𝐴 + 𝐵(𝑥 − 𝑥0) + 𝐶(𝑥 − 𝑥1)(𝑥 − 𝑥0) + 𝐷(𝑥 − 𝑥2)(𝑥 − 𝑥1)(𝑥 − 𝑥0)
       const y =
         A +
-        B * (x - data_points[0]!.timestamp) +
-        C * (x - data_points[1]!.timestamp) * (x - data_points[0]!.timestamp) +
+        B * (x - data_points[0]!.day) +
+        C * (x - data_points[1]!.day) * (x - data_points[0]!.day) +
         D *
-          (x - data_points[2]!.timestamp) *
-          (x - data_points[1]!.timestamp) *
-          (x - data_points[0]!.timestamp);
+          (x - data_points[2]!.day) *
+          (x - data_points[1]!.day) *
+          (x - data_points[0]!.day);
 
       setResult(y);
 
@@ -153,13 +128,11 @@ const Form = () => {
       console.log(A, B, C, D);
       console.log(y);
 
-      const data = {
+      return {
         date,
-        timestamp: x,
+        day: x,
         rate: y,
       };
-
-      return data;
     }
   };
 

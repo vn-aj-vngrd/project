@@ -9,6 +9,29 @@ import { env } from "../../env/client.mjs";
 import type { DataPoints } from "../../types";
 import { AppContext } from "../../context/AppContext";
 
+const sampleData = [
+  {
+    date: "15s",
+    timestamp: 15,
+    rate: 7.11,
+  },
+  {
+    date: "20s",
+    timestamp: 20,
+    rate: 9.01,
+  },
+  {
+    date: "25s",
+    timestamp: 25,
+    rate: 10.63,
+  },
+  {
+    date: "28s",
+    timestamp: 28,
+    rate: 11.47,
+  },
+];
+
 type Inputs = {
   amount: number;
   date: string;
@@ -34,7 +57,7 @@ const Form = () => {
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     setIsLoading(true);
     const start_date = moment()
-      .subtract(6, "days")
+      .subtract(3, "days")
       .toISOString()
       .substring(0, 10);
     const end_date = moment().toISOString().substring(0, 10);
@@ -58,7 +81,7 @@ const Form = () => {
     )
       .then((response) => response.json())
       .then((result) => {
-        // console.log(result);
+        console.log(result);
 
         const data_points = Object.entries(
           result.rates as { [date: string]: { [currency: string]: number } }
@@ -89,54 +112,32 @@ const Form = () => {
       // 𝐴 = 𝑓(𝑥0)
       const A = data_points[0]!.rate;
 
-      // 𝐵 = 𝑓(𝑥1) − 𝑓(𝑥0) /  𝑥1 − 𝑥0
+      // 𝐵 = 𝑓(𝑥1) − 𝑓(𝑥0) / 𝑥1 − 𝑥0
       const B =
         (data_points[1]!.rate - data_points[0]!.rate) /
         (data_points[1]!.timestamp - data_points[0]!.timestamp);
 
-      // 𝐶 = 𝐵(𝑥2) − 𝐵(𝑥1) / 𝑥2 − 𝑥1
+      // 𝐶 = [f(x2) - f(x1) / (x2 - x1)] - [f(x1) - f(x0) / (x1 - x0)] / 𝑥2 − 𝑥0
       const C =
-        (B * (data_points[2]!.timestamp - data_points[1]!.timestamp) -
-          B * (data_points[1]!.timestamp - data_points[0]!.timestamp)) /
+        ((data_points[2]!.rate - data_points[1]!.rate) /
+          (data_points[2]!.timestamp - data_points[1]!.timestamp) -
+          (data_points[1]!.rate - data_points[0]!.rate) /
+            (data_points[1]!.timestamp - data_points[0]!.timestamp)) /
         (data_points[2]!.timestamp - data_points[0]!.timestamp);
 
-      // 𝐷 = 𝐶(𝑥3) − 𝐶(𝑥2) /  𝑥3 − 𝑥2
+      // 𝐷 = [f(x3) - f(x2) / (x3 - x2)] - [f(x2) - f(x1) / (x2 - x1)] - [f(x1) - f(x0) / (x1 - x0)] / 𝑥3 − 𝑥0
       const D =
-        (C * (data_points[3]!.timestamp - data_points[2]!.timestamp) -
-          C * (data_points[2]!.timestamp - data_points[1]!.timestamp)) /
-        (data_points[3]!.timestamp - data_points[1]!.timestamp);
-
-      // 𝐸 = 𝐷(𝑥4) − 𝐷(𝑥3) / 𝑥4 − 𝑥3
-      const E =
-        (D * (data_points[4]!.timestamp - data_points[3]!.timestamp) -
-          D * (data_points[3]!.timestamp - data_points[2]!.timestamp)) /
-        (data_points[4]!.timestamp - data_points[2]!.timestamp);
-
-      // 𝐹 = 𝐸(𝑥5) − 𝐸(𝑥4) /  𝑥5 − 𝑥4
-      const F =
-        (E * (data_points[5]!.timestamp - data_points[4]!.timestamp) -
-          E * (data_points[4]!.timestamp - data_points[3]!.timestamp)) /
-        (data_points[5]!.timestamp - data_points[3]!.timestamp);
-
-      // 𝐺 = 𝐹(𝑥6) − 𝐹(𝑥5) / 𝑥6 − 𝑥5
-      const G =
-        (F * (data_points[6]!.timestamp - data_points[5]!.timestamp) -
-          F * (data_points[5]!.timestamp - data_points[4]!.timestamp)) /
-        (data_points[6]!.timestamp - data_points[4]!.timestamp);
+        ((data_points[3]!.rate - data_points[2]!.rate) /
+          (data_points[3]!.timestamp - data_points[2]!.timestamp) -
+          (data_points[2]!.rate - data_points[1]!.rate) /
+            (data_points[2]!.timestamp - data_points[1]!.timestamp) -
+          (data_points[1]!.rate - data_points[0]!.rate) /
+            (data_points[1]!.timestamp - data_points[0]!.timestamp)) /
+        (data_points[3]!.timestamp - data_points[0]!.timestamp);
 
       const x = new Date(date).getTime() as number;
-      console.log(x);
 
-      // 𝑦 = 𝑓(𝑥) = 𝐴 +
-      // 𝐵(𝑥 − 𝑥0) +
-      // 𝐶(𝑥 − 𝑥1)(𝑥 − 𝑥0) +
-      // 𝐷(𝑥 − 𝑥2)(𝑥 − 𝑥1) (𝑥 − 𝑥0) +
-      // 𝐸(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0) +
-      // F(𝑥 − 𝑥4)(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0) +
-      // G(𝑥 − 𝑥5)(𝑥 − 𝑥4)(𝑥 − 𝑥3)(𝑥 − 𝑥2)(𝑥 − 𝑥1 )(𝑥 − 𝑥0)
-
-      console.log(A, B, C, D, E, D, G);
-
+      // 𝑦 = = 𝐴 + 𝐵(𝑥 − 𝑥0) + 𝐶(𝑥 − 𝑥1)(𝑥 − 𝑥0) + 𝐷(𝑥 − 𝑥2)(𝑥 − 𝑥1)(𝑥 − 𝑥0)
       const y =
         A +
         B * (x - data_points[0]!.timestamp) +
@@ -144,28 +145,13 @@ const Form = () => {
         D *
           (x - data_points[2]!.timestamp) *
           (x - data_points[1]!.timestamp) *
-          (x - data_points[0]!.timestamp) +
-        E *
-          (x - data_points[3]!.timestamp) *
-          (x - data_points[2]!.timestamp) *
-          (x - data_points[1]!.timestamp) *
-          (x - data_points[0]!.timestamp) +
-        F *
-          (x - data_points[4]!.timestamp) *
-          (x - data_points[3]!.timestamp) *
-          (x - data_points[2]!.timestamp) *
-          (x - data_points[1]!.timestamp) *
-          (x - data_points[0]!.timestamp) +
-        G *
-          (x - data_points[5]!.timestamp) *
-          (x - data_points[4]!.timestamp) *
-          (x - data_points[3]!.timestamp) *
-          (x - data_points[2]!.timestamp) *
-          (x - data_points[1]!.timestamp) *
           (x - data_points[0]!.timestamp);
 
       setResult(y);
-      console.log(y)
+
+      console.log(x);
+      console.log(A, B, C, D);
+      console.log(y);
 
       const data = {
         date,

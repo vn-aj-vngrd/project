@@ -226,7 +226,7 @@ const Form = () => {
                 defaultValue={result}
                 disabled
                 type="input"
-                className="input"
+                className="input bg-gray-100"
               />
             </div>
           </div>

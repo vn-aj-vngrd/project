@@ -28,7 +28,7 @@ export const options = {
     },
     title: {
       display: true,
-      text: "Exchange Rate Chart",
+      text: "Exchange Rates Chart",
     },
   },
 };

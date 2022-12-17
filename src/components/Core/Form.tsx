@@ -41,8 +41,8 @@ const Form = () => {
     const base = currencyFrom;
     const symbols = currencyTo;
 
-    console.log(start_date, end_date);
-    console.log(base, symbols);
+    // console.log(start_date, end_date);
+    // console.log(base, symbols);
 
     const myHeaders = new Headers();
     myHeaders.append("apikey", env.NEXT_PUBLIC_API_KEY);
@@ -58,7 +58,7 @@ const Form = () => {
     )
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
+        // console.log(result);
 
         let i = 0;
         const data_points = Object.entries(
@@ -73,7 +73,7 @@ const Form = () => {
         const res = dividedDifference(data_points, data.date);
         data_points.push(res as DataPoints);
 
-        console.log(data_points);
+        // console.log(data_points);
         context.setDataPoints(data_points);
 
         setIsLoading(false);
@@ -109,7 +109,10 @@ const Form = () => {
           C) /
         (data_points[3]!.day - data_points[0]!.day);
 
-      const day_diff = moment(date).diff(data_points[3]!.date, "days");
+      const day_diff = moment(date).diff(
+        data_points[data_points.length - 1]!.date,
+        "days"
+      );
       const x = 4 + 1 * day_diff;
 
       // 𝑦 = = 𝐴 + 𝐵(𝑥 − 𝑥0) + 𝐶(𝑥 − 𝑥1)(𝑥 − 𝑥0) + 𝐷(𝑥 − 𝑥2)(𝑥 − 𝑥1)(𝑥 − 𝑥0)

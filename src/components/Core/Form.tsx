@@ -4,7 +4,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import currencies from "../../data/Currencies";
 import { ArrowRightCircleIcon } from "@heroicons/react/24/solid";
-import moment from "moment";
+import moment from "moment-timezone";
 import { env } from "../../env/client.mjs";
 import type { DataPoints } from "../../types";
 import { AppContext } from "../../context/AppContext";
@@ -202,7 +202,11 @@ const Form = () => {
                   },
                 })}
                 type="date"
-                min={moment().add("1", "days").toISOString().substring(0, 10)}
+                min={moment()
+                  .tz("Asia/Manila")
+                  .add("1", "days")
+                  .toISOString()
+                  .substring(0, 10)}
                 className="input"
               />
             </div>
@@ -213,23 +217,25 @@ const Form = () => {
             )}
           </div>
 
-          {/* Forecast */}
-          <div>
-            <label
-              htmlFor="date"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Forecast Value
-            </label>
-            <div className="mt-2">
-              <input
-                defaultValue={result}
-                disabled
-                type="input"
-                className="input bg-gray-100"
-              />
+          {/* Result */}
+          {context.dataPoints.length > 0 && (
+            <div>
+              <label
+                htmlFor="date"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Result
+              </label>
+              <div className="mt-2">
+                <input
+                  defaultValue={result}
+                  disabled
+                  type="input"
+                  className="input bg-gray-100"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Buttons*/}
           <div className="space-y-4">

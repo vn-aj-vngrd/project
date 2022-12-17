@@ -99,14 +99,22 @@ const Form = () => {
       const C =
         ((data_points[2]!.rate - data_points[1]!.rate) /
           (data_points[2]!.day - data_points[1]!.day) -
-          B) /
+          (data_points[1]!.rate - data_points[0]!.rate) /
+            (data_points[1]!.day - data_points[0]!.day)) /
         (data_points[2]!.day - data_points[0]!.day);
 
-      // D = [f(x3) - f(x2) / (x3 - x2)] - C / 𝑥3 − 𝑥0
+      // D = [(f(x1) - f(x0) / x1 - x0) - (f(x2) - f(x1) / x2 - x0) / x2 - x0] - [(f(x2) - f(x1) / x2 - x1) - (f(x3) - f(x2) / x3 - x2) / x3 - x1] − 𝑥0
       const D =
-        ((data_points[3]!.rate - data_points[2]!.rate) /
-          (data_points[3]!.day - data_points[2]!.day) -
-          C) /
+        (((data_points[1]!.rate - data_points[0]!.rate) /
+          (data_points[1]!.day - data_points[0]!.day) -
+          (data_points[2]!.rate - data_points[1]!.rate) /
+            (data_points[2]!.day - data_points[1]!.day)) /
+          (data_points[2]!.day - data_points[0]!.day) -
+          ((data_points[2]!.rate - data_points[1]!.rate) /
+            (data_points[2]!.day - data_points[1]!.day) -
+            (data_points[3]!.rate - data_points[2]!.rate) /
+              (data_points[3]!.day - data_points[2]!.day)) /
+            (data_points[3]!.day - data_points[1]!.day)) /
         (data_points[3]!.day - data_points[0]!.day);
 
       const day_diff = moment(date).diff(

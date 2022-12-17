@@ -222,7 +222,12 @@ const Form = () => {
               Forecast Value
             </label>
             <div className="mt-2">
-              <input defaultValue={result} type="input" className="input" />
+              <input
+                defaultValue={result}
+                disabled
+                type="input"
+                className="input"
+              />
             </div>
           </div>
 

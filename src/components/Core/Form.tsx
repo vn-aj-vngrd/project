@@ -73,7 +73,7 @@ const Form = () => {
         const res = dividedDifference(data_points, data.date);
         data_points.push(res as DataPoints);
 
-        // console.log(data_points);
+        console.log(data_points);
         context.setDataPoints(data_points);
 
         setIsLoading(false);
@@ -95,7 +95,7 @@ const Form = () => {
         (data_points[1]!.rate - data_points[0]!.rate) /
         (data_points[1]!.day - data_points[0]!.day);
 
-      // C = [f(x2) - f(x1) / (x2 - x1)] - B / 𝑥2 − 𝑥0
+      // C = [f(x2) - f(x1) / (x2 - x1)] - [f(x1) - f(x0) / (x1 - x0)] / 𝑥2 − 𝑥0
       const C =
         ((data_points[2]!.rate - data_points[1]!.rate) /
           (data_points[2]!.day - data_points[1]!.day) -

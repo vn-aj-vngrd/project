@@ -53,7 +53,7 @@ const Chart = () => {
   return (
     <>
       {context.dataPoints.length > 0 && (
-        <div className="h-[210px] w-[400px] rounded-lg bg-white p-1.5 shadow lg:h-[390px] lg:w-[750px]">
+        <div className="h-[120x] w-[310px] rounded-lg bg-white p-1.5 shadow lg:h-[390px] lg:w-[750px]">
           <Line data={data} options={options} />
         </div>
       )}

@@ -87,35 +87,32 @@ const Form = () => {
 
   const dividedDifference = (data_points: DataPoints[], date: string) => {
     if (data_points && data_points.length > 0) {
-      // 𝐴 = 𝑓(𝑥0)
-      const A = data_points[0]!.rate;
+      // A
+      const fx0 = data_points[0]!.rate;
 
-      // 𝐵 = 𝑓(𝑥1) − 𝑓(𝑥0) / 𝑥1 − 𝑥0
-      const B =
+      // B
+      const fx0x1 =
         (data_points[1]!.rate - data_points[0]!.rate) /
         (data_points[1]!.day - data_points[0]!.day);
 
-      // C = [f(x2) - f(x1) / (x2 - x1)] - [f(x1) - f(x0) / (x1 - x0)] / 𝑥2 − 𝑥0
-      const C =
-        ((data_points[2]!.rate - data_points[1]!.rate) /
-          (data_points[2]!.day - data_points[1]!.day) -
-          (data_points[1]!.rate - data_points[0]!.rate) /
-            (data_points[1]!.day - data_points[0]!.day)) /
-        (data_points[2]!.day - data_points[0]!.day);
+      const fx1x2 =
+        (data_points[2]!.rate - data_points[1]!.rate) /
+        (data_points[2]!.day - data_points[1]!.day);
 
-      // D = [(f(x1) - f(x0) / x1 - x0) - (f(x2) - f(x1) / x2 - x0) / x2 - x0] - [(f(x2) - f(x1) / x2 - x1) - (f(x3) - f(x2) / x3 - x2) / x3 - x1] − 𝑥0
-      const D =
-        (((data_points[1]!.rate - data_points[0]!.rate) /
-          (data_points[1]!.day - data_points[0]!.day) -
-          (data_points[2]!.rate - data_points[1]!.rate) /
-            (data_points[2]!.day - data_points[1]!.day)) /
-          (data_points[2]!.day - data_points[0]!.day) -
-          ((data_points[2]!.rate - data_points[1]!.rate) /
-            (data_points[2]!.day - data_points[1]!.day) -
-            (data_points[3]!.rate - data_points[2]!.rate) /
-              (data_points[3]!.day - data_points[2]!.day)) /
-            (data_points[3]!.day - data_points[1]!.day)) /
-        (data_points[3]!.day - data_points[0]!.day);
+      // C
+      const fx0x1x2 =
+        (fx1x2 - fx0x1) / (data_points[2]!.day - data_points[0]!.day);
+
+      const fx2x3 =
+        (data_points[3]!.rate - data_points[2]!.rate) /
+        (data_points[3]!.day - data_points[2]!.day);
+
+      const fx1x2x3 =
+        (fx2x3 - fx1x2) / (data_points[3]!.day - data_points[1]!.day);
+
+      // D
+      const fx1x2x3x4 =
+        (fx1x2x3 - fx0x1x2) / (data_points[3]!.day - data_points[0]!.day);
 
       const day_diff = moment(date).diff(
         data_points[data_points.length - 1]!.date,
@@ -123,12 +120,12 @@ const Form = () => {
       );
       const x = 4 + 1 * day_diff;
 
-      // 𝑦 = = 𝐴 + 𝐵(𝑥 − 𝑥0) + 𝐶(𝑥 − 𝑥1)(𝑥 − 𝑥0) + 𝐷(𝑥 − 𝑥2)(𝑥 − 𝑥1)(𝑥 − 𝑥0)
+      // // 𝑦 = 𝐴 + 𝐵(𝑥 − 𝑥0) + 𝐶(𝑥 − 𝑥1)(𝑥 − 𝑥0) + 𝐷(𝑥 − 𝑥2)(𝑥 − 𝑥1)(𝑥 − 𝑥0)
       const y =
-        A +
-        B * (x - data_points[0]!.day) +
-        C * (x - data_points[1]!.day) * (x - data_points[0]!.day) +
-        D *
+        fx0 +
+        fx0x1 * (x - data_points[0]!.day) +
+        fx0x1x2 * (x - data_points[1]!.day) * (x - data_points[0]!.day) +
+        fx1x2x3x4 *
           (x - data_points[2]!.day) *
           (x - data_points[1]!.day) *
           (x - data_points[0]!.day);
@@ -136,7 +133,7 @@ const Form = () => {
       setResult(y);
 
       console.log(x);
-      console.log(A, B, C, D);
+      console.log(fx0, fx0x1, fx0x1x2, fx1x2x3x4);
       console.log(y);
 
       return {
@@ -222,7 +219,7 @@ const Form = () => {
               htmlFor="date"
               className="block text-sm font-medium text-gray-700"
             >
-              Forecast
+              Forecast Value
             </label>
             <div className="mt-2">
               <input defaultValue={result} type="input" className="input" />
